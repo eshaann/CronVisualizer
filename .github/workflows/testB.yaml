@@ -1,33 +1,14 @@
-name: 'Test B'
+name: 'Test_B'
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 13 * * *"
+  workflow_run:
+    workflows: ["Test_A"]   # MUST match the "name" field of first workflow
+    types:
+      - completed
 
 jobs:
-  build:
-    runs-on: [self-hosted, ps7]
-    defaults:
-      run:
-        shell: pwsh
-
+  run-after-a:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r bin/keolis_requirements.txt
-      - name: Run Keolis Report Script
-        run: python Scripts/Keolis_Monthly_Alerts_Report.py
-        env:
-          SP_ID: ${{ secrets.SP_ID }}
-          SP_SECRET: ${{ secrets.SP_SECRET }}
-          SP_TENANT: ${{ secrets.SP_TENANT }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Echo
+        run: echo "Running after Test_A completes"
