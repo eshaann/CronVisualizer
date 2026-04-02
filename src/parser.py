@@ -1,6 +1,7 @@
 import re
 import requests
 import yaml
+import time_helpers
 
 
 def parse_github_url(url):
@@ -96,3 +97,11 @@ if __name__ == "__main__":
 
     from pprint import pprint
     pprint(workflows)
+
+    run_map = time_helpers.build_run_map(workflows)
+    run_map = time_helpers.propagate_dependencies(workflows, run_map)
+
+    events = time_helpers.build_events(run_map)
+    print(len(events))
+    for e in events:
+        print(f"{e['time']} → {e['workflow']}")
