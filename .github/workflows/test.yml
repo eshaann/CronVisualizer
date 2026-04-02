@@ -1,0 +1,39 @@
+name: Test_A
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * *"
+
+jobs:
+  run-r-script:
+    runs-on: [self-hosted, ps7]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure local R
+        if: runner.os == 'Windows'
+        run: |
+          Add-Content -Path $env:GITHUB_PATH -Value 'C:\Program Files\R\R-4.4.2\bin'
+          Add-Content -Path $env:GITHUB_ENV -Value 'R_HOME=C:\Program Files\R\R-4.4.2'
+          $lib = 'D:\ghes-runner-1\R\win-library\4.4'
+          New-Item -ItemType Directory -Force -Path $lib
+          Add-Content -Path $env:GITHUB_ENV -Value "R_LIBS_USER=$lib"
+
+      - name: Check R visibility
+        run: |
+          Rscript --version
+          Rscript -e "cat('R.home() =', R.home(), '\n'); sessionInfo()"
+          Rscript -e "cat('libPaths =', paste(.libPaths(), collapse=' | '), '\n')"
+
+      - name: Echo Home
+        run: echo $env:HOME
+
+      - name: Execute Script
+        env:
+          SP_ID: ${{ secrets.SP_ID }}
+          SP_SECRET: ${{ secrets.SP_SECRET }}
+          SP_TENANT: ${{ secrets.SP_TENANT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
